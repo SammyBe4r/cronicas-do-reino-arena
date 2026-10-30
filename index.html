@@ -1,0 +1,862 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#110d12">
+    <meta name="description" content="Crie seu herói e enfrente três desafios em um RPG medieval de fantasia com batalhas por turnos.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Crônicas do Reino — Arena dos Heróis">
+    <meta property="og:description" content="Crie seu herói, escolha sua classe e lute por turnos em uma arena medieval de fantasia.">
+    <title>Crônicas do Reino — Arena</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+        color: #f7edda;
+        background: #100d10;
+        font-synthesis: none;
+        --gold: #efc76f;
+        --gold-bright: #ffe8a0;
+        --gold-dark: #8c5c25;
+        --panel: #21191a;
+        --panel-deep: #161214;
+        --muted: #baa995;
+        --line: #604728;
+        --red: #d75855;
+        --green: #81c684;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        min-height: 100vh;
+        margin: 0;
+        background:
+          radial-gradient(ellipse at 50% -20%, #5b341d 0, transparent 48%),
+          radial-gradient(ellipse at 12% 65%, #34201c80 0, transparent 45%),
+          #100d10;
+      }
+      button, input { font: inherit; }
+      button { color: inherit; }
+      button:focus-visible, input:focus-visible { outline: 3px solid var(--gold-bright); outline-offset: 3px; }
+      .shell { width: min(1120px, calc(100% - 34px)); margin: 0 auto; padding: 22px 0 42px; }
+      .masthead { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin: 0 0 22px; }
+      .brand { display: flex; align-items: center; gap: 12px; }
+      .brand-mark {
+        display: grid; width: 48px; height: 48px; place-items: center;
+        border: 1px solid #d5ab50; border-radius: 50%;
+        background: radial-gradient(circle at 35% 25%, #a66c35, #482714 65%, #211416);
+        box-shadow: inset 0 0 0 3px #20140e, 0 0 22px #edba5540;
+        color: var(--gold-bright); font-size: 1.5rem;
+      }
+      .eyebrow { margin: 0 0 4px; color: var(--gold); font-size: .68rem; font-weight: 900; letter-spacing: .2em; text-transform: uppercase; }
+      h1 { margin: 0; color: var(--gold-bright); font-family: Georgia, "Times New Roman", serif; font-size: clamp(1.35rem, 4vw, 2rem); text-shadow: 0 2px #6a351c; }
+      .chapter { color: var(--muted); font-size: .76rem; letter-spacing: .08em; text-transform: uppercase; }
+      .frame {
+        border: 2px solid #8e632b; border-radius: 25px; padding: 5px;
+        background: linear-gradient(135deg, #edc76e, #503218 35%, #c48a3c 75%, #503218);
+        box-shadow: 0 0 0 2px #21150e, 0 18px 60px #0009;
+      }
+      .frame-inner { min-height: 500px; overflow: hidden; border: 1px solid #bd9753; border-radius: 19px; background: #171316; }
+      .view[hidden] { display: none; }
+      .section-head { padding: 23px 26px 15px; border-bottom: 1px solid #4d3924; background: radial-gradient(ellipse at 50% 0, #5a39234d, transparent 70%), linear-gradient(90deg, #251817, #181419 50%, #251817); }
+      .section-head h2 { margin: 0; color: var(--gold-bright); font: 700 clamp(1.3rem, 4vw, 1.8rem) Georgia, "Times New Roman", serif; }
+      .section-head p { margin: 7px 0 0; color: var(--muted); font-size: .88rem; line-height: 1.5; }
+      .creator-layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(270px, .85fr); }
+      .builder { padding: 23px 26px 28px; }
+      .preview-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 25px; border-left: 1px solid #493523; background: radial-gradient(ellipse at 50% 35%, #67451f70, transparent 58%), #171316; }
+      .hero-stage {
+        position: relative; display: grid; width: min(100%, 300px); min-height: 230px; place-items: center; overflow: hidden;
+        border: 2px solid #9a7949; border-radius: 18px;
+        background:
+          radial-gradient(ellipse at 78% 25%, #f5d69c 0 4%, #efcb8b55 5%, transparent 13%),
+          linear-gradient(160deg, transparent 38%, #82966d 39% 48%, transparent 49%),
+          linear-gradient(180deg, #577d91 0%, #a9b5a0 62%, #75644e 63%, #46352d);
+        box-shadow: inset 0 0 38px #09151f77, 0 12px 24px #0005;
+      }
+      .hero-stage::before { position: absolute; inset: auto -20px 53px; height: 95px; border-radius: 50% 50% 0 0; background: #526457; content: ""; }
+      .hero-stage::after { position: absolute; inset: auto -20px 42px; height: 66px; border-radius: 50% 50% 0 0; background: linear-gradient(#73674d, #4a3b30); content: ""; }
+      .hero-stage svg { position: relative; z-index: 1; width: 210px; height: 220px; overflow: visible; filter: drop-shadow(0 10px 7px #22140d85); }
+      .hero-caption { position: relative; z-index: 2; margin-top: -54px; color: #fff1cd; font: 700 1.05rem Georgia, "Times New Roman", serif; text-shadow: 0 2px 4px #1d100d; }
+      .hero-subcaption { position: relative; z-index: 2; margin: 0; color: #f2dfb6; font-size: .78rem; text-shadow: 0 1px 3px #1d100d; }
+      .field { margin: 0 0 21px; padding: 0; border: 0; }
+      .field legend, .field-label { display: block; margin: 0 0 9px; color: #f0dfc1; font-size: .86rem; font-weight: 800; }
+      .optional { color: var(--muted); font-size: .75rem; font-weight: 500; }
+      .name-input {
+        width: 100%; padding: 12px 16px; border: 1px solid #72512f; border-radius: 999px;
+        background: #120f11; color: #fff0d3;
+      }
+      .option-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+      .choice {
+        min-height: 48px; padding: 8px 10px; border: 1px solid #60482d; border-radius: 16px;
+        background: linear-gradient(145deg, #302524, #1d1819); color: #ddcdb5; cursor: pointer;
+        font-weight: 700; line-height: 1.15; transition: .15s ease;
+      }
+      .choice:hover { border-color: #b48b47; background: #38281e; }
+      .choice[aria-pressed="true"] { border-color: #f3d37e; background: linear-gradient(#6f4522, #412519); color: #fff1c4; box-shadow: inset 0 0 0 1px #e8b95b55, 0 0 14px #ebbc4b24; }
+      .race-choice { min-height: 70px; border-radius: 19px; text-align: left; }
+      .race-choice strong { display: block; margin-bottom: 4px; color: var(--gold-bright); font: 700 .95rem Georgia, "Times New Roman", serif; }
+      .race-choice small { display: block; color: #c8b7a0; font-size: .68rem; font-weight: 500; line-height: 1.25; }
+      .skin-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+      .skin-choice { width: 43px; min-height: 43px; padding: 5px; border: 2px solid transparent; border-radius: 50%; background: transparent; cursor: pointer; }
+      .skin-choice span { display: block; width: 29px; height: 29px; border: 2px solid #ffffff50; border-radius: 50%; box-shadow: inset -3px -3px 4px #0003; }
+      .skin-choice[aria-pressed="true"] { border-color: var(--gold-bright); box-shadow: 0 0 12px #efc76f7a; }
+      .color-choice { min-height: 42px; }
+      .color-chip { display: inline-block; width: 14px; height: 14px; margin-right: 5px; border: 1px solid #ffffff6b; border-radius: 50%; vertical-align: -2px; }
+      .create-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      .race-note { margin: 0; color: var(--muted); font-size: .76rem; line-height: 1.4; }
+      .primary, .secondary, .battle-action {
+        border: 1px solid #e8c66c; border-radius: 999px;
+        background: linear-gradient(#a74a25, #70231a 55%, #481613);
+        box-shadow: inset 0 1px #ffe4a18c, 0 3px 0 #30140e;
+        color: #fff0c4; cursor: pointer; font-weight: 900; text-shadow: 0 1px #38130b;
+        transition: transform .12s, filter .12s;
+      }
+      .primary { padding: 13px 21px; white-space: nowrap; }
+      .primary:hover, .secondary:hover, .battle-action:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.16); }
+      .battle-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 20px; border-bottom: 1px solid #4c3924; background: #1d1719; }
+      .adventurer-summary { display: flex; align-items: center; gap: 12px; }
+      .mini-avatar { display: grid; width: 54px; height: 54px; place-items: center; overflow: hidden; border: 2px solid #d7ad58; border-radius: 50%; background: radial-gradient(circle at 50% 25%, #79b4bd, #34566a 75%); }
+      .mini-avatar svg { width: 48px; height: 48px; }
+      .summary-name { color: var(--gold-bright); font: 700 1.05rem Georgia, "Times New Roman", serif; }
+      .summary-meta { margin-top: 4px; color: var(--muted); font-size: .73rem; }
+      .battle-tools { display: flex; align-items: center; gap: 8px; }
+      .resource { min-width: 90px; color: #dbcaaf; font-size: .74rem; }
+      .resource strong { display: block; margin-bottom: 5px; color: #fff0d3; }
+      .meter { height: 7px; overflow: hidden; border: 1px solid #4d392a; border-radius: 99px; background: #100e10; }
+      .meter span { display: block; width: 100%; height: 100%; border-radius: inherit; transition: width .25s ease; }
+      .hp-fill { background: linear-gradient(90deg, #78c36e, #b5df70); }
+      .mp-fill { background: linear-gradient(90deg, #588bda, #9cb8ff); }
+      .small-button { padding: 9px 15px; border: 1px solid #73532d; border-radius: 999px; background: linear-gradient(#342a26, #211a1b); color: #f5dfb4; cursor: pointer; font-size: .76rem; font-weight: 800; }
+      .arena {
+        position: relative; display: grid; min-height: 300px; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 14px;
+        overflow: hidden; isolation: isolate; padding: 22px clamp(15px, 5vw, 56px);
+        background:
+          radial-gradient(ellipse at 51% 59%, #dbc39545, transparent 34%),
+          linear-gradient(180deg, #647583 0%, #b1b2a7 37%, #88897b 57%, #61584b 58%, #302a27 100%);
+      }
+      .arena::before { position: absolute; z-index: -1; inset: 35% -5% auto; height: 29%; border-radius: 50% 50% 0 0; background: linear-gradient(#687565, #596451); content: ""; }
+      .arena::after {
+        position: absolute; z-index: -1; inset: 59% -10% auto; height: 43%;
+        border-top: 3px solid #a48a63;
+        background:
+          repeating-linear-gradient(168deg, transparent 0 23px, #322b2860 24px 25px, transparent 26px 49px),
+          repeating-linear-gradient(8deg, transparent 0 44px, #c0a47523 45px 47px, transparent 48px 83px),
+          linear-gradient(#75634c, #47382f);
+        content: "";
+      }
+      .arena-hill { position: absolute; z-index: 0; right: 7%; bottom: 37%; width: 185px; height: 105px; background: linear-gradient(145deg, #bbb8a4, #747c70 75%); clip-path: polygon(0 100%, 44% 15%, 64% 47%, 77% 30%, 100% 100%); opacity: .76; filter: drop-shadow(0 6px 6px #34453255); }
+      .arena-castle { position: absolute; z-index: 1; top: 15%; left: calc(50% - 56px); width: 112px; height: 92px; opacity: .87; filter: drop-shadow(0 5px 5px #31302d70); }
+      .arena-scenery { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+      .arena-side { position: relative; z-index: 2; display: grid; justify-items: center; gap: 7px; }
+      .combatant {
+        position: relative; display: grid; width: clamp(126px, 24vw, 196px); height: 178px; place-items: center;
+        filter: drop-shadow(0 9px 5px #1c1c2080);
+      }
+      .combatant svg { width: 100%; height: 100%; overflow: visible; }
+      .combatant::after { position: absolute; z-index: 3; inset: 12% 6%; border-radius: 50%; opacity: 0; pointer-events: none; content: ""; }
+      .enemy-art { width: 165px; height: 175px; filter: drop-shadow(0 12px 8px #261e1d90); }
+      .combatant.hit { animation: hit .35s ease; }
+      .combatant.attack { animation: attack .3s ease; }
+      .combatant.magic-hit::after { animation: magic-burst .55s ease-out; background: radial-gradient(circle, #fff4bf 0 3%, #c3f6eb 9%, #6bd5f188 24%, transparent 68%); }
+      .combatant.physical-hit::after { animation: physical-burst .42s ease-out; background: radial-gradient(ellipse, #fff0c8 0 4%, #efb85d99 17%, transparent 65%); }
+      .combatant.poison-hit::after { animation: poison-burst .55s ease-out; background: radial-gradient(ellipse, #d8ffac 0 3%, #9ade61bb 15%, transparent 66%); }
+      .combatant.cast { animation: cast-glow .48s ease; }
+      @keyframes hit { 30% { transform: translateX(12px); filter: brightness(1.8) drop-shadow(0 0 12px #ff7373); } 65% { transform: translateX(-8px); } }
+      @keyframes attack { 45% { transform: translateX(22px) scale(1.05); } }
+      @keyframes magic-burst { 10% { opacity: 1; transform: scale(.2) rotate(0); } 60% { opacity: .9; transform: scale(1.25) rotate(35deg); } 100% { opacity: 0; transform: scale(1.7) rotate(70deg); } }
+      @keyframes physical-burst { 10% { opacity: .9; transform: scale(.2); } 65% { opacity: .8; transform: scale(1.1); } 100% { opacity: 0; transform: scale(1.45); } }
+      @keyframes poison-burst { 10% { opacity: .95; transform: scale(.3); } 55% { opacity: .9; transform: scale(1.2) rotate(-18deg); } 100% { opacity: 0; transform: scale(1.6) rotate(-36deg); } }
+      @keyframes cast-glow { 30% { filter: brightness(1.4) drop-shadow(0 0 14px #9df9e6); } 70% { transform: translateX(13px) scale(1.04); } }
+      .fighter-name { color: #fff4d8; font: 700 1rem Georgia, "Times New Roman", serif; text-shadow: 0 2px 4px #201710, 0 0 12px #fff3; }
+      .fighter-title { color: #f9d991; font-size: .7rem; font-weight: 800; text-shadow: 0 1px 3px #201710; }
+      .fighter-hp { width: min(180px, 100%); }
+      .fighter-hp .meter { height: 12px; border: 2px solid #f1d78d; border-radius: 999px; background: #432b27; box-shadow: 0 2px 5px #22151088; }
+      .enemy-hp { background: linear-gradient(90deg, #b63a3c, #ed7260); }
+      .player-hp { background: linear-gradient(90deg, #7aaf4b, #badb68); }
+      .versus { position: relative; z-index: 3; color: #ffe6a0; font: italic 900 1.5rem Georgia, "Times New Roman", serif; text-shadow: 0 2px #7f331c; }
+      .battle-meta { display: flex; justify-content: space-between; gap: 12px; padding: 10px 20px; border-top: 1px solid #563d23; border-bottom: 1px solid #45301f; background: #1b1517; color: #cabbab; font-size: .78rem; }
+      .turn-badge { color: #ffe092; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+      .log { min-height: 77px; max-height: 96px; overflow-y: auto; padding: 10px 20px; background: radial-gradient(ellipse at 50% 0, #49301e32, transparent 90%), #141113; color: #d8cbb8; font-size: .82rem; line-height: 1.55; }
+      .log p { margin: 0; }
+      .log .latest { color: #fff0ca; }
+      .action-panel { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; padding: 14px 18px 18px; border-top: 1px solid #4c3924; background: linear-gradient(#241a19, #171316); }
+      .action-panel[hidden], .battle-end[hidden] { display: none; }
+      .battle-action { min-height: 66px; padding: 9px 10px; border-radius: 17px; font-size: .83rem; }
+      .battle-action span { display: block; margin-bottom: 5px; font-size: 1.15rem; }
+      .battle-action small { display: block; margin-top: 4px; color: #e0cba6; font-size: .64rem; font-weight: 500; }
+      .battle-action.secondary-action { border-color: #6a5942; background: linear-gradient(#3a3225, #24201c); }
+      .battle-action:disabled { cursor: not-allowed; filter: grayscale(.7); opacity: .55; }
+      .battle-end { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 4px 18px 20px; background: #171316; }
+      .secondary { padding: 11px 20px; }
+      .secondary.gold { background: linear-gradient(#95702c, #60421d 55%, #3b2916); }
+      .toast { position: fixed; right: 18px; bottom: 18px; z-index: 10; max-width: min(370px, calc(100% - 36px)); padding: 12px 16px; border: 1px solid #d9b560; border-radius: 9px; background: #211718; box-shadow: 0 8px 24px #0008; color: #fff0cd; }
+      .toast[hidden] { display: none; }
+      .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+      @media (max-width: 760px) {
+        .creator-layout { grid-template-columns: 1fr; }
+        .preview-panel { grid-row: 1; padding: 18px; border-left: 0; border-bottom: 1px solid #493523; }
+        .hero-stage { min-height: 178px; width: min(100%, 360px); }
+        .hero-stage svg { height: 170px; }
+        .hero-caption { margin-top: -47px; }
+        .builder { padding: 20px; }
+        .combatant { width: clamp(106px, 28vw, 165px); height: 145px; }
+        .enemy-art { width: 130px; height: 145px; }
+        .arena { min-height: 265px; }
+      }
+      @media (max-width: 480px) {
+        .shell { width: calc(100% - 20px); padding-top: 14px; }
+        .masthead { margin-bottom: 15px; }
+        .brand-mark { width: 40px; height: 40px; }
+        .chapter { font-size: .62rem; }
+        .section-head { padding: 18px 16px 13px; }
+        .builder { padding: 17px 14px 21px; }
+        .option-grid { gap: 6px; }
+        .choice { font-size: .76rem; }
+        .race-choice { min-height: 68px; padding: 7px 5px; }
+        .race-choice strong { font-size: .79rem; }
+        .race-choice small { font-size: .61rem; }
+        .create-row { align-items: flex-start; flex-direction: column; }
+        .primary { width: 100%; }
+        .battle-top { align-items: flex-start; padding: 12px 10px; }
+        .battle-tools { flex-direction: column; align-items: stretch; }
+        .resource { min-width: 74px; }
+        .small-button { padding: 7px; }
+        .arena { min-height: 231px; gap: 3px; padding: 14px 8px; }
+        .combatant { width: 108px; height: 125px; }
+        .enemy-art { width: 105px; height: 120px; }
+        .versus { font-size: 1.1rem; }
+        .fighter-name { font-size: .84rem; }
+        .fighter-title { font-size: .62rem; }
+        .battle-meta { padding: 9px 11px; font-size: .69rem; }
+        .log { padding: 9px 12px; font-size: .76rem; }
+        .action-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 11px 10px 14px; }
+        .battle-action { min-height: 59px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">⚔</div>
+          <div>
+            <p class="eyebrow">Crônicas do Reino</p>
+            <h1>Arena dos Heróis</h1>
+          </div>
+        </div>
+        <div class="chapter">Capítulo I · O primeiro desafio</div>
+      </header>
+
+      <div class="frame">
+        <div class="frame-inner">
+          <section class="view" id="creatorView">
+            <header class="section-head">
+              <p class="eyebrow">Forje sua lenda</p>
+              <h2>Crie seu herói</h2>
+              <p>Escolha sua origem, sua aparência e seu caminho. A arena espera por você.</p>
+            </header>
+            <div class="creator-layout">
+              <form class="builder" id="creatorForm">
+                <label class="field-label" for="heroName">Nome do personagem <span class="optional">(opcional)</span></label>
+                <input class="name-input" id="heroName" maxlength="18" placeholder="Ex.: Ari, Kael, Luna" autocomplete="off">
+
+                <fieldset class="field" style="margin-top:20px">
+                  <legend>Sexo / apresentação</legend>
+                  <div class="option-grid" data-group="gender">
+                    <button class="choice" type="button" data-value="Feminina" aria-pressed="true">Feminina</button>
+                    <button class="choice" type="button" data-value="Masculina" aria-pressed="false">Masculina</button>
+                    <button class="choice" type="button" data-value="Andrógina" aria-pressed="false">Andrógina</button>
+                  </div>
+                </fieldset>
+
+                <fieldset class="field">
+                  <legend>Escolha sua raça <span class="optional">· 6 origens</span></legend>
+                  <div class="option-grid" data-group="race">
+                    <button class="choice race-choice" type="button" data-value="Humano" aria-pressed="true"><strong>Humano</strong><small>Versátil e determinado</small></button>
+                    <button class="choice race-choice" type="button" data-value="Elfo" aria-pressed="false"><strong>Elfo</strong><small>Ágil e conectado à magia</small></button>
+                    <button class="choice race-choice" type="button" data-value="Anão" aria-pressed="false"><strong>Anão</strong><small>Resistente e engenhoso</small></button>
+                    <button class="choice race-choice" type="button" data-value="Orc" aria-pressed="false"><strong>Orc</strong><small>Força e coragem inabaláveis</small></button>
+                    <button class="choice race-choice" type="button" data-value="Draconato" aria-pressed="false"><strong>Draconato</strong><small>Escamas e sangue antigo</small></button>
+                    <button class="choice race-choice" type="button" data-value="Fada" aria-pressed="false"><strong>Fada</strong><small>Leve e cheia de encanto</small></button>
+                  </div>
+                </fieldset>
+
+                <fieldset class="field">
+                  <legend>Tom de pele</legend>
+                  <div class="skin-grid" data-group="skin" aria-label="Escolha o tom de pele">
+                    <button class="skin-choice" type="button" data-value="#f5d7b5" aria-label="Pele clara" aria-pressed="true"><span style="background:#f5d7b5"></span></button>
+                    <button class="skin-choice" type="button" data-value="#dfb18a" aria-label="Pele bege" aria-pressed="false"><span style="background:#dfb18a"></span></button>
+                    <button class="skin-choice" type="button" data-value="#bd805a" aria-label="Pele morena clara" aria-pressed="false"><span style="background:#bd805a"></span></button>
+                    <button class="skin-choice" type="button" data-value="#925b40" aria-label="Pele morena" aria-pressed="false"><span style="background:#925b40"></span></button>
+                    <button class="skin-choice" type="button" data-value="#633c31" aria-label="Pele escura" aria-pressed="false"><span style="background:#633c31"></span></button>
+                    <button class="skin-choice" type="button" data-value="#9ba98b" aria-label="Pele verde-oliva" aria-pressed="false"><span style="background:#9ba98b"></span></button>
+                  </div>
+                </fieldset>
+
+                <fieldset class="field">
+                  <legend>Roupa e armadura</legend>
+                  <div class="option-grid" data-group="outfit">
+                    <button class="choice color-choice" type="button" data-value="Manto" aria-pressed="true"><span class="color-chip" style="background:#65419a"></span>Manto</button>
+                    <button class="choice color-choice" type="button" data-value="Couro" aria-pressed="false"><span class="color-chip" style="background:#84502e"></span>Couro</button>
+                    <button class="choice color-choice" type="button" data-value="Armadura" aria-pressed="false"><span class="color-chip" style="background:#71859d"></span>Armadura</button>
+                  </div>
+                  <div class="option-grid" data-group="outfitColor" style="margin-top:8px">
+                    <button class="choice color-choice" type="button" data-value="#65419a" aria-pressed="true"><span class="color-chip" style="background:#65419a"></span>Violeta</button>
+                    <button class="choice color-choice" type="button" data-value="#236e77" aria-pressed="false"><span class="color-chip" style="background:#236e77"></span>Esmeralda</button>
+                    <button class="choice color-choice" type="button" data-value="#a84136" aria-pressed="false"><span class="color-chip" style="background:#a84136"></span>Carmesim</button>
+                    <button class="choice color-choice" type="button" data-value="#315c96" aria-pressed="false"><span class="color-chip" style="background:#315c96"></span>Safira</button>
+                    <button class="choice color-choice" type="button" data-value="#bd8731" aria-pressed="false"><span class="color-chip" style="background:#bd8731"></span>Âmbar</button>
+                    <button class="choice color-choice" type="button" data-value="#d7d0bc" aria-pressed="false"><span class="color-chip" style="background:#d7d0bc"></span>Prata</button>
+                  </div>
+                </fieldset>
+
+                <fieldset class="field">
+                  <legend>Escolha sua classe</legend>
+                  <div class="option-grid" data-group="heroClass">
+                    <button class="choice race-choice" type="button" data-value="Mago" aria-pressed="true"><strong>✧ Mago</strong><small>Feitiços poderosos e muito foco</small></button>
+                    <button class="choice race-choice" type="button" data-value="Assassino" aria-pressed="false"><strong>☠ Assassino</strong><small>Velocidade, precisão e veneno</small></button>
+                    <button class="choice race-choice" type="button" data-value="Guerreiro" aria-pressed="false"><strong>⚔ Guerreiro</strong><small>Defesa firme e golpes pesados</small></button>
+                  </div>
+                </fieldset>
+                <div class="create-row">
+                  <p class="race-note" id="classHint">Mago: lança uma rajada arcana que consome foco.</p>
+                  <button class="primary" type="submit">Entrar na arena&nbsp; →</button>
+                </div>
+              </form>
+
+              <aside class="preview-panel" aria-label="Prévia do personagem">
+                <div class="hero-stage" id="heroPreview"></div>
+                <div class="hero-caption" id="previewName">Aventureiro</div>
+                <p class="hero-subcaption" id="previewDetails">Humano · Mago</p>
+                <p class="race-note" id="raceHint">Humano: equilíbrio e coragem para qualquer jornada.</p>
+              </aside>
+            </div>
+          </section>
+
+          <section class="view" id="battleView" hidden>
+            <header class="battle-top">
+              <div class="adventurer-summary">
+                <div class="mini-avatar" id="miniAvatar" aria-hidden="true"></div>
+                <div>
+                  <div class="summary-name" id="battleHeroName"></div>
+                  <div class="summary-meta" id="battleHeroMeta"></div>
+                </div>
+              </div>
+              <div class="battle-tools">
+                <div class="resource"><strong id="hpText">HP 100/100</strong><div class="meter"><span class="hp-fill" id="hpMeter"></span></div></div>
+                <div class="resource"><strong id="mpText">Foco 40/40</strong><div class="meter"><span class="mp-fill" id="mpMeter"></span></div></div>
+                <button class="small-button" id="editHero" type="button">Editar herói</button>
+              </div>
+            </header>
+            <div class="arena">
+              <svg class="arena-scenery" viewBox="0 0 960 300" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                  <linearGradient id="distantStone" x2="0" y2="1"><stop stop-color="#b5b3a5"/><stop offset="1" stop-color="#737a78"/></linearGradient>
+                  <linearGradient id="arenaFloor" x2="0" y2="1"><stop stop-color="#9b8869" stop-opacity=".6"/><stop offset="1" stop-color="#302a27" stop-opacity=".1"/></linearGradient>
+                  <radialGradient id="sunHaze"><stop stop-color="#f2dcb2" stop-opacity=".55"/><stop offset="1" stop-color="#f2dcb2" stop-opacity="0"/></radialGradient>
+                </defs>
+                <circle cx="520" cy="112" r="115" fill="url(#sunHaze)"/>
+                <path d="M0 174 94 105l50 39 83-77 78 90 83-49 57 42 79-76 75 78 77-51 64 46 78-83 102 83v69H0Z" fill="#75828a" opacity=".72"/>
+                <path d="m0 188 85-39 49 18 98-59 80 61 80-31 86 41 83-53 92 44 79-37 74 40 77-48 77 45v72H0Z" fill="#737e72"/>
+                <path d="M0 190q139-27 252 4t231-1 250-4 227 3v42H0Z" fill="#858678"/>
+                <path d="M0 230q203-34 437-8t523-3v81H0Z" fill="url(#arenaFloor)"/>
+                <g fill="url(#distantStone)" stroke="#626763" stroke-width="2">
+                  <path d="M443 180v-54h10v-21h17v21h20v-28h18v28h17v-15h14v69Zm-34 0v-35h20v-16h18v51Zm133 0v-44h19v-16h16v60Z"/>
+                  <path d="m439 127 17-28 17 28m32-28 19-30 20 30m29 35 14-22 14 22" fill="#77766e"/>
+                </g>
+                <g fill="#3c484b">
+                  <path d="M470 180v-28a9 9 0 0 1 18 0v28Zm42 0v-33a9 9 0 0 1 18 0v33Zm-82 0v-19h9v19Zm98 0v-24h9v24Z"/>
+                </g>
+                <g fill="#e9c78e" opacity=".8">
+                  <path d="M475 147h4v11h-4zm43-2h4v12h-4zm-84 16h4v8h-4zm98-5h4v9h-4z"/>
+                </g>
+                <g fill="#6c5540" opacity=".8">
+                  <path d="M0 218h42v12H0zm52 7h28v8H52zm848-13h60v13h-60zm-54 18h39v8h-39z"/>
+                </g>
+                <path d="M0 246q120-23 245-2t235-3 238 5 242-4v8q-123 10-242 1t-236 2-243-3-239 3Z" fill="#d0ba8d" opacity=".38"/>
+                <g stroke="#c0ad85" stroke-width="3" opacity=".45">
+                  <path d="m157 243 35 57m65-57-25 57m475-59-33 59m98-63 25 63"/>
+                </g>
+              </svg>
+              <div class="arena-hill"></div>
+              <svg class="arena-castle" viewBox="0 0 100 80" aria-hidden="true">
+                <defs>
+                  <linearGradient id="castleStone" x2="0" y2="1"><stop stop-color="#bcb49f"/><stop offset="1" stop-color="#737b78"/></linearGradient>
+                  <linearGradient id="castleGold" x2="0" y2="1"><stop stop-color="#fff0b6"/><stop offset=".45" stop-color="#d8b15f"/><stop offset="1" stop-color="#806036"/></linearGradient>
+                </defs>
+                <path d="M10 73V31h13V16h15v15h23V24h15v7h14v42Z" fill="#555c5e" opacity=".55" transform="translate(2 3)"/>
+                <path d="M12 72V31h13V16h15v15h23V24h15v7h14v41Z" fill="url(#castleStone)" stroke="#596264" stroke-width="2"/>
+                <path d="m8 31 12-20 12 20m34-7 11-18 11 18m7 7 8-17 8 17" fill="#756861" stroke="#494748" stroke-width="2"/>
+                <path d="M15 33h12v3H15m49-8h14v3H64m26 5h8" stroke="#ded2b7" stroke-width="2"/>
+                <path d="M41 72V51a9 9 0 0 1 18 0v21M23 41h7v10h-7m49-18h7v10h-7" fill="#465c61" stroke="#d8caa6" stroke-width="2"/>
+                <path d="M47 70V53a3 3 0 0 1 6 0v17M25 42h3m45-7h3" stroke="#a9c2bd" stroke-width="2"/>
+                <path d="M20 10V1m48 4V-3m27 19V5" stroke="#594432" stroke-width="2"/>
+                <path d="m21 1 12 4-12 5m47-9 12 4-12 5m27-5 10 4-10 5" fill="#8e3932"/>
+              </svg>
+              <div class="arena-side" id="playerSide">
+                <div class="combatant" id="playerCombatant"></div>
+                <div class="fighter-name" id="playerFighterName"></div>
+                <div class="fighter-title" id="playerFighterTitle"></div>
+                <div class="fighter-hp"><div class="meter"><span class="player-hp" id="playerBattleHp"></span></div></div>
+              </div>
+              <div class="versus" aria-hidden="true">VS</div>
+              <div class="arena-side" id="enemySide">
+                <div class="combatant" id="enemyCombatant"></div>
+                <div class="fighter-name" id="enemyName"></div>
+                <div class="fighter-title" id="enemyTitle"></div>
+                <div class="fighter-hp"><div class="meter"><span class="enemy-hp" id="enemyBattleHp"></span></div></div>
+              </div>
+            </div>
+            <div class="battle-meta">
+              <span class="turn-badge" id="turnBadge">Sua vez</span>
+              <span id="roundLabel">Rodada 1 · Desafio 1 de 3</span>
+            </div>
+            <div class="log" id="battleLog" role="log" aria-live="polite"></div>
+            <div class="action-panel" id="actionPanel">
+              <button class="battle-action" type="button" data-action="attack"><span>⚔️</span>Ataque<small>Golpe básico</small></button>
+              <button class="battle-action" type="button" data-action="skill"><span>✨</span><span id="skillLabel">Habilidade</span><small id="skillCost">20 de foco</small></button>
+              <button class="battle-action secondary-action" type="button" data-action="defend"><span>🛡️</span>Defender<small>Reduz o próximo dano</small></button>
+              <button class="battle-action secondary-action" type="button" data-action="potion"><span>🧪</span>Poção<small id="potionCount">2 restantes</small></button>
+            </div>
+            <div class="battle-end" id="battleEnd" hidden></div>
+          </section>
+        </div>
+      </div>
+      <p class="instructions">Monte seu personagem, escolha sua estratégia e vença três desafios por turnos.</p>
+    </main>
+    <div class="toast" id="toast" role="status" hidden></div>
+
+    <script>
+      (() => {
+        const raceData = {
+          Humano: { label: "Humano", note: "Equilíbrio e coragem para qualquer jornada.", hp: 0, focus: 0 },
+          Elfo: { label: "Elfo", note: "A magia ancestral amplia sua reserva de foco.", hp: -5, focus: 12 },
+          Anão: { label: "Anão", note: "Uma constituição firme aguenta mais um golpe.", hp: 18, focus: -4 },
+          Orc: { label: "Orc", note: "Força bruta faz cada ataque pesar mais.", hp: 8, focus: -5 },
+          Draconato: { label: "Draconato", note: "O sangue dracônico equilibra vigor e magia.", hp: 8, focus: 6 },
+          Fada: { label: "Fada", note: "Leve e encantada, recupera foco com facilidade.", hp: -8, focus: 14 }
+        };
+        const classData = {
+          Mago: { hint: "Mago: lança uma rajada arcana que consome foco.", skill: "Rajada arcana", cost: 18, hp: 88, focus: 62, attack: 13, defense: 5 },
+          Assassino: { hint: "Assassino: um golpe veloz pode envenenar o inimigo.", skill: "Golpe furtivo", cost: 14, hp: 98, focus: 46, attack: 17, defense: 6 },
+          Guerreiro: { hint: "Guerreiro: um golpe pesado que quebra defesas.", skill: "Golpe esmagador", cost: 16, hp: 122, focus: 38, attack: 19, defense: 11 }
+        };
+        const enemies = [
+          { name: "Gosma Saltitante", title: "Criatura da floresta", hp: 48, attack: 8, color: "#59b9d4", kind: "slime" },
+          { name: "Goblin Saqueador", title: "Bandido das ruínas", hp: 70, attack: 12, color: "#86a74d", kind: "goblin" },
+          { name: "Cavaleiro Espectral", title: "Guardião do portal", hp: 96, attack: 15, color: "#77749f", kind: "knight" }
+        ];
+        const state = {
+          gender: "Feminina",
+          race: "Humano",
+          skin: "#f5d7b5",
+          outfit: "Manto",
+          outfitColor: "#65419a",
+          heroClass: "Mago",
+          character: null,
+          enemy: null,
+          enemyIndex: 0,
+          round: 1,
+          potions: 2,
+          guarding: false,
+          busy: false,
+          ended: false,
+          logs: []
+        };
+        const skinGroup = document.querySelector('[data-group="skin"]');
+        const toast = document.querySelector("#toast");
+        let toastTimer;
+
+        function escapeXml(value) {
+          return String(value).replace(/[&<>"']/g, (char) => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;"
+          })[char]);
+        }
+
+        function heroSvg(options, compact = false) {
+          const skin = options.skin;
+          const prefix = compact ? "miniHero" : "battleHero";
+          const outfit = options.outfitColor;
+          const hair = options.gender === "Masculina" ? "#382922" : "#493137";
+          const eye = options.race === "Draconato" ? "#f5a849" : "#352738";
+          const ear = options.race === "Elfo" || options.race === "Fada";
+          const horns = options.race === "Draconato";
+          const tusks = options.race === "Orc";
+          const wings = options.race === "Fada";
+          const beard = options.race === "Anão" || (options.gender === "Masculina" && options.outfit === "Armadura");
+          const body = options.outfit === "Armadura" ? "#82909a" : options.outfit === "Couro" ? "#714b32" : outfit;
+          const cape = options.outfit === "Manto" ? outfit : options.outfit === "Couro" ? "#49362d" : "#525d68";
+          const hairLocks = options.gender === "Feminina"
+            ? `<path d="M68 85Q60 101 66 132l9 8 4-36m31-21q10 20 4 47l-9 10-2-39" fill="url(#${prefix}Hair)" stroke="#302238" stroke-width="3"/>`
+            : options.gender === "Andrógina"
+              ? `<path d="M68 85Q60 97 66 119l8 7 3-29m34-15q7 15 3 31l-8 8-2-28" fill="url(#${prefix}Hair)" stroke="#302238" stroke-width="3"/>`
+              : `<path d="M69 85Q63 93 67 108m45-23q6 9 3 20" fill="none" stroke="url(#${prefix}Hair)" stroke-width="7" stroke-linecap="round"/>`;
+          const headgear = options.heroClass === "Mago"
+            ? `<path d="M62 84Q67 70 87 69l8-20 23 35q-23-8-56 2Z" fill="#435b69" stroke="#29363e" stroke-width="4" stroke-linejoin="round"/><path d="m96 54 15 27-16-5Z" fill="#879597"/><path d="M60 83q31-10 61 0" fill="none" stroke="#b9955d" stroke-width="5"/><path d="m89 78 4-7 4 7-4 5Z" fill="#d4b46c"/>`
+            : options.heroClass === "Assassino"
+              ? `<path d="M62 89q6-23 27-23 21 0 30 23l-11-7-8-8-11 9-11-8-8 12Z" fill="#31343b" stroke="#24262b" stroke-width="4"/><path d="M70 89q20 7 39 0" fill="none" stroke="#b49967" stroke-width="4"/>`
+              : `<path d="M65 85q1-18 25-20 24 2 28 20l-7-5-8-8-12 8-11-7-9 12Z" fill="#737e83" stroke="#343a3d" stroke-width="4"/><path d="M66 84h51" stroke="#d1b372" stroke-width="4"/><path d="M80 77q11-8 23 0" fill="none" stroke="#aeb4ac" stroke-width="3"/>`;
+          const size = compact ? 'viewBox="0 0 180 220"' : 'viewBox="0 0 180 220"';
+          return `<svg ${size} role="img" aria-label="Prévia do herói ${escapeXml(options.race)} ${escapeXml(options.heroClass)}" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="${prefix}Skin" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#fff0d3"/><stop offset=".48" stop-color="${skin}"/><stop offset="1" stop-color="#775443"/></linearGradient>
+              <linearGradient id="${prefix}Cloth" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#c5b9c9"/><stop offset=".36" stop-color="${body}"/><stop offset="1" stop-color="#17181d"/></linearGradient>
+              <linearGradient id="${prefix}Cape" x1="0" x2="1" y1="0" y2="1"><stop stop-color="${cape}"/><stop offset=".55" stop-color="#29252d"/><stop offset="1" stop-color="${cape}"/></linearGradient>
+              <linearGradient id="${prefix}Hair" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#80614b"/><stop offset=".4" stop-color="${hair}"/><stop offset="1" stop-color="#211c20"/></linearGradient>
+              <linearGradient id="${prefix}Steel" x1="0" x2="1"><stop stop-color="#515e66"/><stop offset=".42" stop-color="#e1dfd1"/><stop offset=".68" stop-color="#79858a"/><stop offset="1" stop-color="#424a52"/></linearGradient>
+              <linearGradient id="${prefix}Gold" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#fff0b6"/><stop offset=".45" stop-color="#d8b15f"/><stop offset="1" stop-color="#806036"/></linearGradient>
+            </defs>
+            <ellipse cx="90" cy="204" rx="32" ry="7" fill="#20150c" opacity=".38"/>
+            ${wings ? `<path d="M66 110Q24 78 35 133L68 158M112 110Q154 78 143 133L112 158" fill="#b9f1e8" fill-opacity=".72" stroke="#f0fff2" stroke-width="3"/><path d="M62 119 43 112m20 19-17 1m72-13 19-7m-20 19 17 2" stroke="#e8fff4" stroke-width="2"/>` : ""}
+            ${hairLocks}
+            <path d="M61 124Q43 133 39 195l18 5 9-35 5 36h39l5-36 9 35 18-5q-5-62-22-71l-9-9H71Z" fill="url(#${prefix}Cape)" stroke="#28232a" stroke-width="4" stroke-linejoin="round"/>
+            <path d="m69 130 21 10 21-10 12 60H57Z" fill="url(#${prefix}Cloth)" stroke="#343139" stroke-width="4"/>
+            <path d="M61 153q29 8 58 0" fill="none" stroke="url(#${prefix}Gold)" stroke-width="5"/>
+            <path d="m87 145 3 42m-23-34 11 8m30-8-11 8" fill="none" stroke="#f0dbab" stroke-opacity=".62" stroke-width="2"/>
+            <path d="M58 157Q50 166 48 185l13 3 13-27m33-4q12 4 15 27l-13 3-13-27" fill="url(#${prefix}Cloth)" stroke="#353139" stroke-width="4" stroke-linejoin="round"/>
+            <path d="M66 186h15l-2 12H65Zm34 0h15l2 12h-14Z" fill="#302b2a" stroke="#554537" stroke-width="3"/>
+            <path d="M64 198q9-4 18 0v5H62Zm34 0q9-4 18 0l3 5H98Z" fill="#4a3329" stroke="#2b2220" stroke-width="3"/>
+            <path d="m72 137 18 10 18-10-3 15H75Z" fill="url(#${prefix}Steel)" stroke="#424349" stroke-width="3"/>
+            <path d="m69 145-13 5 9 14 13-10m33-9 13 5-9 14-13-10" fill="url(#${prefix}Steel)" stroke="#44454a" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M74 139 90 150l16-11m-16 12v32" fill="none" stroke="url(#${prefix}Gold)" stroke-width="3"/>
+            <circle cx="90" cy="153" r="4" fill="#d7bb77" stroke="#73552c" stroke-width="2"/>
+            <path d="M75 110q-2-10 2-18h26q5 9 2 19l9 14q-21 17-44 0Z" fill="url(#${prefix}Skin)" stroke="#795b4b" stroke-width="2.5"/>
+            ${ear ? `<path d="m72 101-21-19 10 33m43-14 21-19-11 35" fill="url(#${prefix}Skin)" stroke="#795b4b" stroke-width="3" stroke-linejoin="round"/>` : ""}
+            ${horns ? `<path d="m74 87-10-19 18 12m24 7 10-19-18 12" fill="#d6b77a" stroke="#66513d" stroke-width="3" stroke-linejoin="round"/>` : ""}
+            <path d="M77 98q5-4 10 0m7 0q5-4 10 0" fill="none" stroke="${hair}" stroke-width="3" stroke-linecap="round"/>
+            <ellipse cx="82" cy="103" rx="2.5" ry="3" fill="${eye}"/><ellipse cx="101" cy="103" rx="2.5" ry="3" fill="${eye}"/>
+            <circle cx="82.5" cy="102.5" r=".8" fill="#fff"/><circle cx="101.5" cy="102.5" r=".8" fill="#fff"/>
+            <path d="m90 104-2 8 4 1m-6 5q4 3 8 0" fill="none" stroke="#855d4b" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M77 108q4 3 9 0m7 0q5 3 9 0" fill="none" stroke="#bd836b" stroke-opacity=".7" stroke-width="2"/>
+            ${tusks ? `<path d="m77 113 3 9 4-7m14-2 4 7 3-9" fill="#fff0ce" stroke="#795745" stroke-width="1.5" stroke-linejoin="round"/>` : ""}
+            ${beard ? `<path d="M75 114q15 9 30 0l-3 13-12 9-12-9Z" fill="url(#${prefix}Hair)" stroke="#302a2b" stroke-width="2"/><path d="m83 121 7 4 7-4" fill="none" stroke="#c69461" stroke-width="1.5"/>` : ""}
+            ${headgear}
+            ${options.heroClass === "Mago" ? `<path d="M132 127 147 190" stroke="#654934" stroke-width="6" stroke-linecap="round"/><path d="M136 149 141 170" stroke="#a98452" stroke-width="2"/><circle cx="129" cy="121" r="10" fill="url(#${prefix}Gold)" stroke="#6b4c29" stroke-width="3"/><circle cx="129" cy="121" r="5" fill="#82d8d1"/><path d="M128 112q-9-7 0-13 9 6 1 13" fill="#bdeee2" opacity=".8"/>` : ""}
+            ${options.heroClass === "Assassino" ? `<path d="m128 153 23-33 5 6-21 35Z" fill="url(#${prefix}Steel)" stroke="#45464b" stroke-width="2"/><path d="m123 159 10-15 7 6-11 15Z" fill="#704733"/><path d="M133 149 149 127" stroke="#f0e5c4" stroke-width="1.5"/>` : ""}
+            ${options.heroClass === "Guerreiro" ? `<path d="M127 141 146 151 138 180 120 174Z" fill="url(#${prefix}Steel)" stroke="#4b4542" stroke-width="3"/><path d="m128 149 9 4-5 17-9-3Z" fill="#82929a"/><path d="m133 153 4 2" stroke="#f1e2bb" stroke-width="2"/><path d="M137 153 151 129" stroke="url(#${prefix}Steel)" stroke-width="6"/><path d="m132 154 11 6" stroke="url(#${prefix}Gold)" stroke-width="4"/>` : ""}
+          </svg>`;
+        }
+
+        function selectInGroup(group, value) {
+          const container = document.querySelector(`[data-group="${group}"]`);
+          container.querySelectorAll("button").forEach((button) => {
+            button.setAttribute("aria-pressed", String(button.dataset.value === value));
+          });
+          state[group] = value;
+          updatePreview();
+        }
+
+        function updatePreview() {
+          const nameInput = document.querySelector("#heroName");
+          const name = nameInput.value.trim() || "Aventureiro";
+          const race = raceData[state.race];
+          document.querySelector("#heroPreview").innerHTML = heroSvg(state);
+          document.querySelector("#previewName").textContent = name;
+          document.querySelector("#previewDetails").textContent = `${race.label} · ${state.heroClass} · ${state.outfit}`;
+          document.querySelector("#raceHint").textContent = `${race.label}: ${race.note}`;
+          document.querySelector("#classHint").textContent = classData[state.heroClass].hint;
+        }
+
+        function notify(message) {
+          clearTimeout(toastTimer);
+          toast.textContent = message;
+          toast.hidden = false;
+          toastTimer = setTimeout(() => { toast.hidden = true; }, 2500);
+        }
+
+        function log(message) {
+          state.logs.unshift(message);
+          state.logs = state.logs.slice(0, 4);
+          document.querySelector("#battleLog").innerHTML = state.logs
+            .map((entry, index) => `<p class="${index === 0 ? "latest" : ""}">${escapeXml(entry)}</p>`)
+            .join("");
+        }
+
+        function clamp(value, min, max) {
+          return Math.max(min, Math.min(max, value));
+        }
+
+        function setMeters() {
+          const hero = state.character;
+          const enemy = state.enemy;
+          document.querySelector("#hpText").textContent = `HP ${hero.hp}/${hero.maxHp}`;
+          document.querySelector("#mpText").textContent = `Foco ${hero.focus}/${hero.maxFocus}`;
+          document.querySelector("#hpMeter").style.width = `${hero.hp / hero.maxHp * 100}%`;
+          document.querySelector("#mpMeter").style.width = `${hero.focus / hero.maxFocus * 100}%`;
+          document.querySelector("#playerBattleHp").style.width = `${hero.hp / hero.maxHp * 100}%`;
+          document.querySelector("#enemyBattleHp").style.width = `${Math.max(0, enemy.hp) / enemy.maxHp * 100}%`;
+          document.querySelector("#potionCount").textContent = `${state.potions} ${state.potions === 1 ? "restante" : "restantes"}`;
+          document.querySelector('[data-action="potion"]').disabled = state.potions <= 0 || state.ended || state.busy;
+          document.querySelector('[data-action="skill"]').disabled = hero.focus < classData[hero.heroClass].cost || state.ended || state.busy;
+          document.querySelectorAll(".battle-action").forEach((button) => {
+            if (button.dataset.action !== "potion" && button.dataset.action !== "skill") button.disabled = state.ended || state.busy;
+          });
+          document.querySelector("#turnBadge").textContent = state.ended ? "Desafio concluído" : state.busy ? "Vez do inimigo" : "Sua vez";
+          document.querySelector("#roundLabel").textContent = `Rodada ${state.round} · Desafio ${state.enemyIndex + 1} de ${enemies.length}`;
+        }
+
+        function enemySvg(enemy) {
+          if (enemy.kind === "slime") {
+            return `<svg class="enemy-art" viewBox="0 0 180 180" aria-label="${enemy.name}" role="img" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="ooze" cx=".35" cy=".2" r=".9"><stop stop-color="#d2ebd0"/><stop offset=".18" stop-color="#91c5a1"/><stop offset=".48" stop-color="${enemy.color}"/><stop offset=".82" stop-color="#356b68"/><stop offset="1" stop-color="#263d3d"/></radialGradient><linearGradient id="oozeLight" x2="1" y2="1"><stop stop-color="#efffe8" stop-opacity=".85"/><stop offset="1" stop-color="#8ce5c5" stop-opacity="0"/></linearGradient></defs><ellipse cx="90" cy="159" rx="55" ry="9" fill="#30241e" opacity=".55"/><path d="M34 143Q29 124 39 104Q42 83 63 77Q76 48 94 69Q111 52 126 78Q145 82 148 110Q157 133 139 148Q117 157 93 152Q67 162 34 143Z" fill="url(#ooze)" stroke="#314c4a" stroke-width="5"/><path d="M52 105Q60 76 82 79Q67 91 70 107Q59 101 52 105Zm54-26q19 0 27 23-11-8-20-4 3-10-7-19Z" fill="url(#oozeLight)"/><path d="M64 113q10-10 21 0m18 0q11-10 21 0" fill="none" stroke="#24333b" stroke-width="5" stroke-linecap="round"/><ellipse cx="75" cy="117" rx="4" ry="6" fill="#d9f6ec"/><ellipse cx="113" cy="117" rx="4" ry="6" fill="#d9f6ec"/><circle cx="76" cy="118" r="2" fill="#13252c"/><circle cx="114" cy="118" r="2" fill="#13252c"/><path d="m86 133 4 9 5-9 5 10 5-10" fill="#e7e1ca" stroke="#7d8174" stroke-width="1.5"/><path d="M43 139q-7 12 4 13 9 0 7-13m75 5q-5 12 5 12 9-2 5-16" fill="url(#ooze)"/><circle cx="51" cy="128" r="3" fill="#d7f0d7" opacity=".8"/><circle cx="132" cy="104" r="2" fill="#e5f5df" opacity=".8"/></svg>`;
+          }
+          if (enemy.kind === "goblin") {
+            return `<svg class="enemy-art" viewBox="0 0 180 180" aria-label="${enemy.name}" role="img" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="goblinSkin" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#c5b776"/><stop offset=".42" stop-color="${enemy.color}"/><stop offset="1" stop-color="#3c5036"/></linearGradient><linearGradient id="goblinLeather" x2="0" y2="1"><stop stop-color="#77614c"/><stop offset=".45" stop-color="#44372f"/><stop offset="1" stop-color="#29282a"/></linearGradient><linearGradient id="goblinSteel"><stop stop-color="#4f5c5d"/><stop offset=".5" stop-color="#c2bda6"/><stop offset="1" stop-color="#535552"/></linearGradient></defs><ellipse cx="90" cy="161" rx="47" ry="8" fill="#30241e" opacity=".55"/><path d="m55 79-32-37 47 16 20 17m35 4 42-36-17 51" fill="url(#goblinSkin)" stroke="#414431" stroke-width="6" stroke-linejoin="round"/><path d="M64 75Q91 58 116 76L131 119 114 148 64 144 49 116Z" fill="url(#goblinLeather)" stroke="#403630" stroke-width="5"/><path d="m54 91-28 15 28 8m69-29 28 10-26 13" fill="url(#goblinSkin)" stroke="#414431" stroke-width="6" stroke-linejoin="round"/><path d="m66 75 11-24 12 22m13 1 17-26 3 31" fill="url(#goblinSteel)" stroke="#544b3e" stroke-width="4"/><path d="M69 84Q90 76 115 85v10H68Z" fill="#41403a" stroke="#c3a56a" stroke-width="2"/><ellipse cx="78" cy="99" rx="7" ry="8" fill="#e9e0c3"/><ellipse cx="106" cy="99" rx="7" ry="8" fill="#e9e0c3"/><circle cx="80" cy="100" r="3.5" fill="#322922"/><circle cx="108" cy="100" r="3.5" fill="#322922"/><path d="m80 118 10 4 10-5m-18 9 5 6m17-8-4 7" fill="none" stroke="#603b31" stroke-width="3"/><path d="m62 141-6 19m53-17 7 19" stroke="#524232" stroke-width="9" stroke-linecap="round"/><path d="m57 145 58 1" stroke="#c3a05d" stroke-width="5"/><circle cx="88" cy="146" r="5" fill="url(#goblinSteel)" stroke="#443c32" stroke-width="2"/><path d="m134 82 23 5-13 9" fill="none" stroke="#d6c6a1" stroke-width="4"/></svg>`;
+          }
+          return `<svg class="enemy-art" viewBox="0 0 180 180" aria-label="${enemy.name}" role="img" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="spectralArmor" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#bbc5c3"/><stop offset=".35" stop-color="${enemy.color}"/><stop offset=".68" stop-color="#3b3d4c"/><stop offset="1" stop-color="#171923"/></linearGradient><linearGradient id="ghost" x2="0" y2="1"><stop stop-color="#d3e2dd"/><stop offset=".5" stop-color="#7c8294"/><stop offset="1" stop-color="#444658"/></linearGradient><linearGradient id="spectralGold" x2="0" y2="1"><stop stop-color="#fff0b6"/><stop offset=".45" stop-color="#d8b15f"/><stop offset="1" stop-color="#806036"/></linearGradient></defs><ellipse cx="90" cy="162" rx="53" ry="9" fill="#201d28" opacity=".58"/><path d="m53 147 5-59 13-18h43l16 21 4 55-19 13H71Z" fill="url(#spectralArmor)" stroke="#353542" stroke-width="6"/><path d="m62 78-15-39 34 26m38 2 21-40 5 48" fill="url(#ghost)" stroke="#454751" stroke-width="7" stroke-linejoin="round"/><path d="m51 43 12 9-11 4m75-5 13-8-8 17" fill="none" stroke="#eee4ce" stroke-width="3"/><path d="m72 81 18 15-8 13 9 13-12 15-16-15 9-13-8-12Zm41 0-17 15 7 13-9 13 12 15 14-15-8-13 8-12Z" fill="#282732" stroke="#b7b2a1" stroke-width="2"/><path d="m78 104 9 4m17 0 9-4" stroke="#c9f0e2" stroke-width="5" stroke-linecap="round"/><path d="m88 111 6 5-7 4m16-9-6 5 7 4" fill="none" stroke="#82dfdc" stroke-width="2"/><path d="M74 144 57 164m48-20 20 20" stroke="url(#ghost)" stroke-width="11" stroke-linecap="round"/><path d="M66 147h56" stroke="url(#spectralGold)" stroke-width="5"/><circle cx="94" cy="148" r="6" fill="#c6a55d" stroke="#56462d" stroke-width="2"/><path d="m138 85 19 68m-24-57 29-8" stroke="url(#spectralArmor)" stroke-width="8" stroke-linecap="round"/><path d="m147 87 18-13" stroke="#d6cfb7" stroke-width="3"/><circle cx="151" cy="84" r="6" fill="#dfc77f"/><path d="m67 71 22 17m26-17L95 88" stroke="#e4dfce" stroke-opacity=".46" stroke-width="2"/></svg>`;
+        }
+
+        function renderBattle() {
+          const hero = state.character;
+          const enemy = state.enemy;
+          const portrait = heroSvg(hero, true);
+          document.querySelector("#miniAvatar").innerHTML = portrait;
+          document.querySelector("#playerCombatant").innerHTML = portrait;
+          document.querySelector("#battleHeroName").textContent = hero.name;
+          document.querySelector("#battleHeroMeta").textContent = `${hero.raceLabel} · ${hero.heroClass} · Nível ${hero.level}`;
+          document.querySelector("#playerFighterName").textContent = hero.name;
+          document.querySelector("#playerFighterTitle").textContent = `${hero.heroClass} ${hero.raceLabel}`;
+          document.querySelector("#enemyCombatant").innerHTML = enemySvg(enemy);
+          document.querySelector("#enemyName").textContent = enemy.name;
+          document.querySelector("#enemyTitle").textContent = enemy.title;
+          document.querySelector("#skillLabel").textContent = classData[hero.heroClass].skill;
+          document.querySelector("#skillCost").textContent = `${classData[hero.heroClass].cost} de foco`;
+          setMeters();
+        }
+
+        function createHero() {
+          const race = raceData[state.race];
+          const chosenClass = classData[state.heroClass];
+          const name = document.querySelector("#heroName").value.trim() || "Aventureiro";
+          state.character = {
+            name, gender: state.gender, race: state.race, raceLabel: race.label,
+            skin: state.skin, outfit: state.outfit, outfitColor: state.outfitColor,
+            heroClass: state.heroClass, hp: chosenClass.hp + race.hp, maxHp: chosenClass.hp + race.hp,
+            focus: chosenClass.focus + race.focus, maxFocus: chosenClass.focus + race.focus,
+            attack: chosenClass.attack + (state.race === "Orc" ? 4 : 0),
+            defense: chosenClass.defense + (state.race === "Anão" ? 3 : 0),
+            level: 1, xp: 0, wins: 0
+          };
+          state.enemyIndex = 0;
+          state.potions = 2;
+          state.round = 1;
+          state.logs = [];
+          state.ended = false;
+          state.busy = false;
+          state.guarding = false;
+          document.querySelector("#creatorView").hidden = true;
+          document.querySelector("#battleView").hidden = false;
+          document.querySelector("#battleEnd").hidden = true;
+          document.querySelector("#actionPanel").hidden = false;
+          spawnEnemy();
+          log(`${name} entra na arena. ${enemyDisplayName()} se aproxima!`);
+          renderBattle();
+        }
+
+        function enemyDisplayName() {
+          return enemies[state.enemyIndex].name;
+        }
+
+        function spawnEnemy() {
+          const template = enemies[state.enemyIndex];
+          const scale = 1 + Math.max(0, state.character.level - 1) * .22;
+          state.enemy = { ...template, maxHp: Math.round(template.hp * scale), hp: Math.round(template.hp * scale), attack: Math.round(template.attack * scale) };
+          state.round = 1;
+          document.querySelector("#battleEnd").hidden = true;
+          document.querySelector("#actionPanel").hidden = false;
+          document.querySelector("#enemySide").classList.remove("hit");
+          renderBattle();
+        }
+
+        function animate(id, className) {
+          const element = document.querySelector(id);
+          element.classList.remove(className);
+          void element.offsetWidth;
+          element.classList.add(className);
+          setTimeout(() => element.classList.remove(className), 650);
+        }
+
+        function finishEncounter(victory) {
+          state.ended = true;
+          state.busy = false;
+          const end = document.querySelector("#battleEnd");
+          const panel = document.querySelector("#actionPanel");
+          panel.hidden = true;
+          end.hidden = false;
+          if (!victory) {
+            end.innerHTML = `<button class="secondary" type="button" data-end="retry">Tentar desafio novamente</button><button class="secondary gold" type="button" data-end="creator">Recriar personagem</button>`;
+            log(`${state.character.name} caiu na arena. A próxima tentativa começa com HP e foco restaurados.`);
+          } else if (state.enemyIndex < enemies.length - 1) {
+            state.character.wins += 1;
+            state.character.xp += 35;
+            state.character.level += 1;
+            state.character.maxHp += 12;
+            state.character.maxFocus += 6;
+            state.character.hp = Math.min(state.character.maxHp, state.character.hp + 30);
+            state.character.focus = Math.min(state.character.maxFocus, state.character.focus + 18);
+            end.innerHTML = `<button class="secondary gold" type="button" data-end="next">Próximo desafio&nbsp; →</button>`;
+            log(`${state.enemy.name} foi derrotado! Você ganhou 35 XP e avançou para o nível ${state.character.level}.`);
+          } else {
+            state.character.wins += 1;
+            state.character.xp += 50;
+            end.innerHTML = `<button class="secondary gold" type="button" data-end="next">Jogar novamente</button><button class="secondary" type="button" data-end="creator">Criar outro herói</button>`;
+            log("O Cavaleiro Espectral caiu. Você venceu os três desafios e se tornou uma lenda!");
+          }
+          renderBattle();
+          setMeters();
+        }
+
+        function enemyTurn() {
+          if (state.ended) return;
+          state.busy = true;
+          setMeters();
+          window.setTimeout(() => {
+            if (state.ended) return;
+            animate("#enemyCombatant", "attack");
+            animate("#playerCombatant", "hit");
+            let damage = Math.max(2, state.enemy.attack - state.character.defense);
+            if (state.guarding) {
+              damage = Math.max(1, Math.ceil(damage * .28));
+              state.guarding = false;
+              log(`${state.enemy.name} ataca, mas sua defesa reduz o golpe para ${damage} de dano.`);
+            } else {
+              log(`${state.enemy.name} ataca e causa ${damage} de dano.`);
+            }
+            state.character.hp = Math.max(0, state.character.hp - damage);
+            state.round += 1;
+            if (state.character.hp <= 0) finishEncounter(false);
+            else {
+              state.busy = false;
+              setMeters();
+            }
+          }, 620);
+        }
+
+        function playerAction(action) {
+          if (state.busy || state.ended) return;
+          const hero = state.character;
+          const skill = classData[hero.heroClass];
+          if (action === "potion") {
+            if (!state.potions) return;
+            if (hero.hp === hero.maxHp && hero.focus === hero.maxFocus) {
+              notify("Você já está com energia cheia.");
+              return;
+            }
+            state.potions -= 1;
+            const healed = Math.min(hero.maxHp - hero.hp, 32);
+            const restored = Math.min(hero.maxFocus - hero.focus, 14);
+            hero.hp += healed;
+            hero.focus += restored;
+            log(`Poção usada: +${healed} HP${restored ? ` e +${restored} de foco` : ""}.`);
+            enemyTurn();
+            renderBattle();
+            return;
+          }
+          if (action === "defend") {
+            state.guarding = true;
+            log(`${hero.name} ergue a guarda e prepara a defesa.`);
+            enemyTurn();
+            return;
+          }
+          let damage;
+          if (action === "skill") {
+            if (hero.focus < skill.cost) {
+              notify("Foco insuficiente para essa habilidade.");
+              return;
+            }
+            hero.focus -= skill.cost;
+            const multiplier = hero.heroClass === "Mago" ? 2.25 : hero.heroClass === "Assassino" ? 2.05 : 2;
+            damage = Math.round(hero.attack * multiplier + Math.random() * 5);
+            if (hero.heroClass === "Assassino" && state.enemyIndex < enemies.length - 1) {
+              damage += 5;
+              log(`${skill.skill}! A lâmina envenenada causa ${damage} de dano.`);
+            } else if (hero.heroClass === "Guerreiro") {
+              damage += 4;
+              log(`${skill.skill}! O impacto causa ${damage} de dano.`);
+            } else {
+              log(`${skill.skill}! A magia causa ${damage} de dano.`);
+            }
+          } else {
+            damage = Math.round(hero.attack + Math.random() * 5);
+            const focusGain = hero.race === "Fada" ? 9 : 5;
+            hero.focus = Math.min(hero.maxFocus, hero.focus + focusGain);
+            log(`${hero.name} ataca e causa ${damage} de dano. (+${focusGain} foco)`);
+          }
+          const impact = action === "skill"
+            ? hero.heroClass === "Mago" ? "magic-hit" : hero.heroClass === "Assassino" ? "poison-hit" : "physical-hit"
+            : "physical-hit";
+          animate("#playerCombatant", action === "skill" && hero.heroClass === "Mago" ? "cast" : "attack");
+          animate("#enemyCombatant", "hit");
+          animate("#enemyCombatant", impact);
+          state.enemy.hp = Math.max(0, state.enemy.hp - damage);
+          if (state.enemy.hp <= 0) {
+            finishEncounter(true);
+          } else {
+            renderBattle();
+            enemyTurn();
+          }
+          setMeters();
+        }
+
+        function retryChallenge() {
+          const hero = state.character;
+          hero.hp = hero.maxHp;
+          hero.focus = hero.maxFocus;
+          state.potions = 2;
+          state.ended = false;
+          state.logs = [];
+          spawnEnemy();
+          log(`${hero.name} retorna à arena para um novo duelo.`);
+        }
+
+        function returnToCreator() {
+          state.character = null;
+          document.querySelector("#battleView").hidden = true;
+          document.querySelector("#creatorView").hidden = false;
+          updatePreview();
+        }
+
+        document.querySelectorAll("[data-group]").forEach((group) => {
+          group.addEventListener("click", (event) => {
+            const button = event.target.closest("button[data-value]");
+            if (!button) return;
+            selectInGroup(group.dataset.group, button.dataset.value);
+          });
+        });
+        document.querySelector("#heroName").addEventListener("input", updatePreview);
+        document.querySelector("#creatorForm").addEventListener("submit", (event) => {
+          event.preventDefault();
+          createHero();
+        });
+        document.querySelector("#actionPanel").addEventListener("click", (event) => {
+          const button = event.target.closest("button[data-action]");
+          if (button && !button.disabled) playerAction(button.dataset.action);
+        });
+        document.querySelector("#battleEnd").addEventListener("click", (event) => {
+          const button = event.target.closest("button[data-end]");
+          if (!button) return;
+          if (button.dataset.end === "next") {
+            if (state.enemyIndex < enemies.length - 1) state.enemyIndex += 1;
+            else {
+              state.enemyIndex = 0;
+              state.character.hp = state.character.maxHp;
+              state.character.focus = state.character.maxFocus;
+              state.potions = 2;
+              state.character.level = 1;
+              state.character.maxHp = classData[state.character.heroClass].hp + raceData[state.character.race].hp;
+              state.character.maxFocus = classData[state.character.heroClass].focus + raceData[state.character.race].focus;
+            }
+            state.ended = false;
+            spawnEnemy();
+            log(`${state.enemy.name} surge para o próximo duelo!`);
+          } else if (button.dataset.end === "retry") retryChallenge();
+          else returnToCreator();
+        });
+        document.querySelector("#editHero").addEventListener("click", returnToCreator);
+
+        updatePreview();
+      })();
+    </script>
+  </body>
+</html>
